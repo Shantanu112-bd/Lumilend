@@ -155,6 +155,7 @@ async function submitSorobanTransaction(operationCall) {
     }
 
     if (!rpc.Api.isSimulationSuccess(sim)) {
+        console.error("Simulation failed:", sim);
         throw new Error("Simulation rejected by node.");
     }
 
@@ -167,8 +168,9 @@ async function submitSorobanTransaction(operationCall) {
 
     const signedTx = TransactionBuilder.fromXDR(signedXdr, NETWORK_PASSPHRASE);
 
-    const submitRes = await server.submitTransaction(signedTx);
-    if (submitRes.status === "ERROR") {
+    const submitRes = await server.sendTransaction(signedTx);
+    if (submitRes.errorResult) {
+        console.error("Transaction Error:", submitRes);
         throw new Error("Transaction failed during submission.");
     }
 
