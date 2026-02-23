@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { isConnected, isAllowed, setAllowed, getAddress } from '@stellar/freighter-api';
 import { Wallet, LogOut, ArrowDownToLine, ArrowUpFromLine, Coins, CheckCircle, XCircle, Clock, RefreshCw, ExternalLink, Info, LockKeyhole, ChartBar } from 'lucide-react';
 import {
+  kit,
+  getKitAddress,
   fetchPoolStats,
   fetchLenderInfo,
   fetchActiveLoan,
@@ -51,13 +52,14 @@ export default function App() {
 
   const checkConnection = useCallback(async () => {
     try {
-      if (await isConnected() && await isAllowed()) {
-        const { address, error } = await getAddress();
-        if (address && !error) {
-          setWallet(address);
-          await refreshAllData(address);
-        }
-      }
+      // Just check if we can silently get the address.
+      // E.g. session already authenticated
+      // Note: Some wallets will popup here, but we'll try for smooth UX
+      // const { address } = await getKitAddress();
+      // if (address) {
+      //    setWallet(address);
+      //    await refreshAllData(address);
+      // }
     } catch (e) {
       console.error(e);
     }
@@ -87,32 +89,17 @@ export default function App() {
     }
   };
 
-  const handleConnectClick = () => {
-    setShowConnectModal(true);
-    setConnectStep('idle');
-  };
-
-  const executeConnection = async () => {
-    setConnectStep('loading');
+  const handleConnectClick = async () => {
     try {
-      const connected = await isConnected();
-      if (!connected) {
-        setConnectStep('error_not_found');
-        return;
-      }
-
-      await setAllowed();
-      const { address, error } = await getAddress();
-      if (address && !error) {
-        setWallet(address);
-        await refreshAllData(address);
-        setConnectStep('success');
-        setTimeout(() => setShowConnectModal(false), 2000);
-      } else if (error) {
-        setConnectStep('error_rejected');
+      const result = await kit.authModal();
+      if (result && result.address) {
+        setWallet(result.address);
+        await refreshAllData(result.address);
+        showToastMsg(`Wallet connected: ${formatHash(result.address)}`, 'success', null);
       }
     } catch (e) {
-      setConnectStep('error_rejected');
+      console.error(e);
+      showToastMsg('Connection rejected or error', 'warning');
     }
   };
 
@@ -131,85 +118,6 @@ export default function App() {
           onConnect={handleConnectClick}
           poolStats={poolStats}
         />
-        {showConnectModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => connectStep !== 'loading' && setShowConnectModal(false)}></div>
-            <div className="card relative w-full max-w-[480px] z-10 p-8 shadow-2xl rounded-2xl">
-              <button
-                onClick={() => setShowConnectModal(false)}
-                className="absolute top-4 right-4 text-textSecondary hover:text-textPrimary"
-              >
-                <XCircle size={24} />
-              </button>
-
-              {connectStep === 'idle' && (
-                <>
-                  <h2 className="text-2xl font-semibold text-textPrimary mb-2">Connect Your Wallet</h2>
-                  <p className="text-textSecondary mb-6">Use Freighter to connect to Stellar Testnet</p>
-
-                  <div
-                    onClick={executeConnection}
-                    className="flex items-center justify-between p-4 bg-background border border-primary/30 rounded-xl hover:border-primary cursor-pointer transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
-                        <Wallet className="text-primary" />
-                      </div>
-                      <div>
-                        <div className="font-medium text-lg text-textPrimary">Freighter</div>
-                        <div className="text-xs text-textSecondary">Recommended for Stellar</div>
-                      </div>
-                    </div>
-                    <div className="text-primary font-medium">Connect &rarr;</div>
-                  </div>
-                </>
-              )}
-
-              {connectStep === 'loading' && (
-                <div className="flex flex-col items-center justify-center py-8">
-                  <div className="w-12 h-12 border-4 border-borderCol border-t-primary rounded-full animate-spin mb-4"></div>
-                  <h2 className="text-xl font-medium text-textPrimary mb-2">Waiting for extension...</h2>
-                  <p className="text-textSecondary text-center">Please approve the connection request in your Freighter wallet popup.</p>
-                </div>
-              )}
-
-              {connectStep === 'error_not_found' && (
-                <div className="flex flex-col items-start">
-                  <XCircle size={48} className="text-danger mb-4" />
-                  <h2 className="text-2xl font-semibold text-textPrimary mb-2">Freighter Not Installed</h2>
-                  <p className="text-textSecondary mb-6">You need the Freighter browser extension to use LumiLend.</p>
-                  <div className="flex gap-3 w-full">
-                    <button onClick={() => setShowConnectModal(false)} className="btn-ghost flex-1">Dismiss</button>
-                    <a href="https://freighter.app" target="_blank" rel="noreferrer" className="btn-danger flex-1">Install Freighter</a>
-                  </div>
-                </div>
-              )}
-
-              {connectStep === 'error_rejected' && (
-                <div className="flex flex-col items-start">
-                  <div className="w-12 h-12 bg-warning/20 rounded-full flex items-center justify-center mb-4">
-                    <Info className="text-warning" size={24} />
-                  </div>
-                  <h2 className="text-2xl font-semibold text-textPrimary mb-2">Connection Rejected</h2>
-                  <p className="text-textSecondary mb-6">You rejected the connection request. Click below to try again.</p>
-                  <div className="flex gap-3 w-full">
-                    <button onClick={() => setShowConnectModal(false)} className="btn-ghost flex-1">Dismiss</button>
-                    <button onClick={executeConnection} className="btn-primary bg-warning hover:bg-warning/80 flex-1 border-none text-white">Try Again</button>
-                  </div>
-                </div>
-              )}
-
-              {connectStep === 'success' && (
-                <div className="flex flex-col items-center justify-center py-6 text-center">
-                  <CheckCircle size={56} className="text-success mb-4" />
-                  <h2 className="text-2xl font-semibold text-textPrimary mb-2">Wallet Connected!</h2>
-                  <p className="text-textSecondary mb-1 font-mono">{formatHash(wallet)}</p>
-                  <p className="text-accent font-medium">Balance: {formatXLM(balance)} XLM</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </>
     );
   }

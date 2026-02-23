@@ -1,5 +1,24 @@
-import { getAddress, signTransaction, getNetworkDetails } from '@stellar/freighter-api';
 import { rpc, TransactionBuilder, Networks, xdr, Address, nativeToScVal, scValToNative, Contract, Server } from '@stellar/stellar-sdk';
+import { StellarWalletsKit } from '@creit.tech/stellar-wallets-kit';
+import { FreighterModule } from '@creit.tech/stellar-wallets-kit/modules/freighter';
+import { xBullModule } from '@creit.tech/stellar-wallets-kit/modules/xbull';
+
+StellarWalletsKit.init({
+    network: 'TESTNET',
+    selectedWalletId: 'freighter',
+    modules: [new FreighterModule(), new xBullModule()],
+});
+
+export const kit = StellarWalletsKit;
+
+export async function getKitAddress() {
+    try {
+        const result = await kit.getAddress();
+        return { address: result.address, error: null };
+    } catch (error) {
+        return { address: null, error };
+    }
+}
 
 export const CONTRACT_ID = import.meta.env.VITE_CONTRACT_ID || '';
 export const RPC_URL = 'https://soroban-testnet.stellar.org';
@@ -109,7 +128,7 @@ async function getSourceAccount() {
 }
 
 async function submitSorobanTransaction(operationCall) {
-    const { address, error } = await getAddress();
+    const { address, error } = await getKitAddress();
     if (!address || error) throw new Error("Wallet not connected");
     const publicKey = address;
 
@@ -141,10 +160,10 @@ async function submitSorobanTransaction(operationCall) {
 
     const preparedTx = rpc.assembleTransaction(tx, NETWORK_PASSPHRASE, sim).build();
 
-    const signedXdr = await signTransaction(preparedTx.toXDR(), {
-        network: 'TESTNET',
+    const signResult = await kit.signTransaction(preparedTx.toXDR(), {
         networkPassphrase: NETWORK_PASSPHRASE,
     });
+    const signedXdr = typeof signResult === 'string' ? signResult : signResult.signedTxXdr;
 
     const signedTx = TransactionBuilder.fromXDR(signedXdr, NETWORK_PASSPHRASE);
 
@@ -167,7 +186,7 @@ async function submitSorobanTransaction(operationCall) {
 }
 
 export async function depositXlm(amount) {
-    const { address, error } = await getAddress();
+    const { address, error } = await getKitAddress();
     if (error || !address) throw new Error("Wallet issue.");
     const amountStroops = BigInt(Math.floor(Number(amount) * 10 ** 7));
     const contract = new Contract(CONTRACT_ID);
@@ -180,7 +199,7 @@ export async function depositXlm(amount) {
 }
 
 export async function requestLoan(amount, durationDays) {
-    const { address, error } = await getAddress();
+    const { address, error } = await getKitAddress();
     if (error || !address) throw new Error("Wallet issue.");
     const amountStroops = BigInt(Math.floor(Number(amount) * 10 ** 7));
     const contract = new Contract(CONTRACT_ID);
@@ -194,7 +213,7 @@ export async function requestLoan(amount, durationDays) {
 }
 
 export async function repayLoan(loanId) {
-    const { address, error } = await getAddress();
+    const { address, error } = await getKitAddress();
     if (error || !address) throw new Error("Wallet issue.");
     const contract = new Contract(CONTRACT_ID);
     const op = contract.call(
