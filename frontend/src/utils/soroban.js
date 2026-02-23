@@ -1,4 +1,4 @@
-import { rpc, TransactionBuilder, Networks, xdr, Address, nativeToScVal, scValToNative, Contract, Server } from '@stellar/stellar-sdk';
+import { rpc, TransactionBuilder, Networks, xdr, Address, nativeToScVal, scValToNative, Contract, Horizon } from '@stellar/stellar-sdk';
 import { StellarWalletsKit } from '@creit.tech/stellar-wallets-kit';
 import { FreighterModule } from '@creit.tech/stellar-wallets-kit/modules/freighter';
 import { xBullModule } from '@creit.tech/stellar-wallets-kit/modules/xbull';
@@ -105,7 +105,7 @@ export async function fetchActiveLoan(walletPubkey) {
 
 export async function fetchXlmBalance(walletPubkey) {
     try {
-        const horizon = new Server('https://horizon-testnet.stellar.org');
+        const horizon = new Horizon.Server('https://horizon-testnet.stellar.org');
         const acc = await horizon.loadAccount(walletPubkey);
         const native = acc.balances.find((b) => b.asset_type === 'native');
         return native ? native.balance : '0';
@@ -115,7 +115,7 @@ export async function fetchXlmBalance(walletPubkey) {
 }
 
 async function getSourceAccount() {
-    const horizon = new Server('https://horizon-testnet.stellar.org');
+    const horizon = new Horizon.Server('https://horizon-testnet.stellar.org');
     // For simulation we can use a randomly established account or just the fallback.
     return await horizon.loadAccount('GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF').catch(() => {
         return {
@@ -132,7 +132,7 @@ async function submitSorobanTransaction(operationCall) {
     if (!address || error) throw new Error("Wallet not connected");
     const publicKey = address;
 
-    const horizon = new Server('https://horizon-testnet.stellar.org');
+    const horizon = new Horizon.Server('https://horizon-testnet.stellar.org');
     let account;
     try {
         account = await horizon.loadAccount(publicKey);
