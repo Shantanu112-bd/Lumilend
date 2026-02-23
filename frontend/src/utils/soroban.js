@@ -158,7 +158,7 @@ async function submitSorobanTransaction(operationCall) {
         throw new Error("Simulation rejected by node.");
     }
 
-    const preparedTx = rpc.assembleTransaction(tx, NETWORK_PASSPHRASE, sim).build();
+    const preparedTx = rpc.assembleTransaction(tx, sim).build();
 
     const signResult = await kit.signTransaction(preparedTx.toXDR(), {
         networkPassphrase: NETWORK_PASSPHRASE,
