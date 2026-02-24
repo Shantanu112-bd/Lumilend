@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Wallet, LogOut, ArrowDownToLine, ArrowUpFromLine, Coins, CheckCircle, XCircle, Clock, RefreshCw, ExternalLink, Info, LockKeyhole, ChartBar } from 'lucide-react';
+import { Wallet, LogOut, ArrowDownToLine, ArrowUpFromLine, Coins, CheckCircle, XCircle, Clock, RefreshCw, ExternalLink, Info, LockKeyhole, ChartBar, Send } from 'lucide-react';
 import {
   kit,
   getKitAddress,
@@ -11,6 +11,7 @@ import {
 import TransactionToast from './components/TransactionToast';
 import BorrowForm from './components/BorrowForm';
 import DepositForm from './components/DepositForm';
+import SendForm from './components/SendForm';
 import ActiveLoanCard from './components/ActiveLoanCard';
 import PoolDashboard from './components/PoolDashboard';
 import LandingPage from './components/LandingPage';
@@ -163,6 +164,7 @@ export default function App() {
           <nav className="space-y-2 mb-8">
             <SidebarItem icon={<ChartBar />} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
             <SidebarItem icon={<ArrowDownToLine />} label="Deposit" active={activeTab === 'deposit'} onClick={() => setActiveTab('deposit')} />
+            <SidebarItem icon={<Send />} label="Send XLM" active={activeTab === 'send'} onClick={() => setActiveTab('send')} />
             <SidebarItem icon={<Coins />} label="Borrow" active={activeTab === 'borrow'} onClick={() => setActiveTab('borrow')} />
             <SidebarItem icon={<Clock />} label="My Loans" active={activeTab === 'loans'} onClick={() => setActiveTab('loans')} />
           </nav>
@@ -194,6 +196,7 @@ export default function App() {
         <div className="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-borderCol z-50 flex justify-around p-2 pb-safe">
           <MobileTab icon={<ChartBar />} label="Overview" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
           <MobileTab icon={<ArrowDownToLine />} label="Deposit" active={activeTab === 'deposit'} onClick={() => setActiveTab('deposit')} />
+          <MobileTab icon={<Send />} label="Send" active={activeTab === 'send'} onClick={() => setActiveTab('send')} />
           <MobileTab icon={<Coins />} label="Borrow" active={activeTab === 'borrow'} onClick={() => setActiveTab('borrow')} />
           <MobileTab icon={<Clock />} label="Loans" active={activeTab === 'loans'} onClick={() => setActiveTab('loans')} />
         </div>
@@ -268,6 +271,17 @@ export default function App() {
                 balance={balance}
                 poolStats={poolStats}
                 onSuccess={() => { refreshAllData(wallet); setActiveTab('dashboard'); }}
+                showToast={showToastMsg}
+              />
+            </div>
+          )}
+
+          {activeTab === 'send' && (
+            <div className="max-w-[560px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-300">
+              <SendForm
+                publicKey={wallet}
+                balance={balance}
+                onBalanceRefresh={() => refreshAllData(wallet)}
                 showToast={showToastMsg}
               />
             </div>
