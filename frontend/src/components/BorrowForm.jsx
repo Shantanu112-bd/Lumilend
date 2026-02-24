@@ -1,45 +1,114 @@
-import React, { useState, useEffect } from 'react';
-import { Loader2, Coins, CheckCircle, ExternalLink, Info, AlertTriangle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Loader2, Coins, CheckCircle, ExternalLink, Info, AlertTriangle, AlertCircle } from 'lucide-react';
 import { requestLoan } from '../utils/soroban';
 import { formatXLM, formatHash } from '../App';
+import ConfirmationModal from './ConfirmationModal';
+
+function FieldError({ error }) {
+    if (!error) return null;
+    return (
+        <p className="mt-1 text-sm text-red-400 flex items-center gap-1">
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            {error}
+        </p>
+    );
+}
 
 export default function BorrowForm({ wallet, poolStats, onSuccess, showToast, hasActiveLoan }) {
     const [amount, setAmount] = useState('');
     const [duration, setDuration] = useState(14);
+
+    // Modal & status state
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [status, setStatus] = useState('idle'); // idle, pending, success
     const [txHash, setTxHash] = useState('');
-    const [errorMsg, setErrorMsg] = useState('');
+
+    // Validation state
+    const [touched, setTouched] = useState({});
+    const [errors, setErrors] = useState({ amount: '', duration: '' });
 
     const availableLiquidity = Number(poolStats?.available) || 0;
-    const isAmountTooHigh = Number(amount) > availableLiquidity;
 
-    useEffect(() => {
-        const numAmt = Number(amount) || 0;
-        if (numAmt > availableLiquidity && availableLiquidity > 0) {
-            setErrorMsg(`Pool only has ${formatXLM(availableLiquidity)} XLM available.`);
-        } else if (numAmt !== 0 && (numAmt < 5 || numAmt > 100)) {
-            setErrorMsg('Loan must be between 5 XLM and 100 XLM.');
-        } else {
-            setErrorMsg('');
+    const validateBorrowForm = () => {
+        const newErrors = {};
+        const num = parseFloat(amount);
+        const days = parseInt(duration);
+
+        if (!amount)
+            newErrors.amount = 'Loan amount is required.';
+        else if (num < 5)
+            newErrors.amount = 'Minimum loan amount is 5 XLM.';
+        else if (num > 100)
+            newErrors.amount = 'Maximum loan amount is 100 XLM.';
+        else if (num > parseFloat(availableLiquidity))
+            newErrors.amount = `Pool only has ${availableLiquidity} XLM available.`;
+
+        if (!duration)
+            newErrors.duration = 'Loan duration is required.';
+        else if (days < 7)
+            newErrors.duration = 'Minimum duration is 7 days.';
+        else if (days > 30)
+            newErrors.duration = 'Maximum duration is 30 days.';
+
+        setErrors(prev => ({ ...prev, ...newErrors }));
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleBlur = (field) => {
+        setTouched(prev => ({ ...prev, [field]: true }));
+        // re-validate all to keep it simple, or validate individual
+        const newErrors = {};
+        const num = parseFloat(amount);
+        if (field === 'amount') {
+            if (!amount) newErrors.amount = 'Loan amount is required.';
+            else if (num < 5) newErrors.amount = 'Minimum loan amount is 5 XLM.';
+            else if (num > 100) newErrors.amount = 'Maximum loan amount is 100 XLM.';
+            else if (num > availableLiquidity) newErrors.amount = `Pool only has ${availableLiquidity} XLM available.`;
+            else newErrors.amount = '';
         }
-    }, [amount, availableLiquidity]);
+        setErrors(prev => ({ ...prev, ...newErrors }));
+    };
 
-    const numAmt = Number(amount) || 0;
-    // According to contract: interest is Principal * RATE * Duration / 3650000 
-    // Wait, the PRD says 5% fixed interest. The contract uses `(principal * rate_bps * duration_days) / (10000 * 365)`.
-    // Actually the Figma prompt just says "Interest (5%)" without prorating visibly in the prompt summary text, 
-    // but typically it means APY or Fixed 5%. The math from Figma prompt: Principal 20, Interest 1.00 XLM.
-    // 1 XLM is exactly 5% of 20 XLM. So the Figma logic calculates 5% flat fee on the principal.
+    const handleChange = (field, value) => {
+        if (field === 'amount') setAmount(value);
+        if (field === 'duration') setDuration(Number(value));
+
+        if (touched[field]) {
+            let error = '';
+            if (field === 'amount') {
+                const num = parseFloat(value);
+                if (!value) error = 'Loan amount is required.';
+                else if (num < 5) error = 'Minimum loan amount is 5 XLM.';
+                else if (num > 100) error = 'Maximum loan amount is 100 XLM.';
+                else if (num > availableLiquidity) error = `Pool only has ${availableLiquidity} XLM available.`;
+            }
+            setErrors(prev => ({ ...prev, [field]: error }));
+        }
+    };
+
+    const numAmt = parseFloat(amount) || 0;
     const interest = numAmt * 0.05;
     const totalRepay = numAmt + interest;
 
     const dueTime = new Date(Date.now() + duration * 24 * 60 * 60 * 1000);
     const dueString = dueTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-    const handleBorrow = async () => {
-        if (!amount || Number(amount) < 5 || Number(amount) > 100 || errorMsg || hasActiveLoan) return;
+    const getBorderClass = (field, value) => {
+        if (touched[field] && errors[field]) return 'border-danger focus:ring-danger';
+        if (touched[field] && !errors[field] && value) return 'border-success focus:ring-success/50';
+        return 'border-borderCol focus:border-primary focus:ring-primary/50';
+    };
 
+    const handleConfirmClick = () => {
+        setTouched({ amount: true, duration: true });
+        if (validateBorrowForm()) {
+            setShowConfirmModal(true);
+        }
+    };
+
+    const handleConfirmedBorrow = async () => {
+        setShowConfirmModal(false);
         setIsSubmitting(true);
         setStatus('pending');
         try {
@@ -54,6 +123,15 @@ export default function BorrowForm({ wallet, poolStats, onSuccess, showToast, ha
             setStatus('idle');
             setIsSubmitting(false);
         }
+    };
+
+    const handleReset = () => {
+        setAmount('');
+        setDuration(14);
+        setTouched({});
+        setErrors({ amount: '', duration: '' });
+        setStatus('idle');
+        setIsSubmitting(false);
     };
 
     if (hasActiveLoan && status !== 'success') {
@@ -95,6 +173,9 @@ export default function BorrowForm({ wallet, poolStats, onSuccess, showToast, ha
                     <button onClick={onSuccess} className="btn-primary flex-1">
                         View My Loan
                     </button>
+                    <button onClick={handleReset} className="btn-ghost flex-1 opacity-0 pointer-events-none hidden">
+                        Reset
+                    </button>
                 </div>
             </div>
         );
@@ -113,15 +194,20 @@ export default function BorrowForm({ wallet, poolStats, onSuccess, showToast, ha
             </div>
 
             <div className="space-y-6">
-                <div>
-                    <label className="text-sm font-medium text-textSecondary mb-2 block">Loan Amount</label>
+
+                {/* Amount Input */}
+                <div className="space-y-1">
+                    <label className="text-sm font-medium text-textSecondary mb-2 block">
+                        Loan Amount <span className="text-danger">*</span>
+                    </label>
                     <div className="relative">
                         <input
                             type="number"
                             placeholder="0.00"
-                            className={`input text-xl font-semibold pr-16 ${errorMsg ? 'border-danger focus:ring-danger focus:border-danger' : ''} ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            className={`input text-xl font-semibold w-full pr-16 ${getBorderClass('amount', amount)} ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                             value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
+                            onChange={(e) => handleChange('amount', e.target.value)}
+                            onBlur={() => handleBlur('amount')}
                             disabled={isSubmitting}
                         />
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 text-primary font-bold bg-primary/10 px-2 py-1 rounded text-xs border border-primary/20">
@@ -129,29 +215,39 @@ export default function BorrowForm({ wallet, poolStats, onSuccess, showToast, ha
                         </div>
                     </div>
 
-                    <div className="flex justify-between mt-2">
-                        <p className={`text-xs ${errorMsg ? 'text-danger' : 'text-textMuted'}`}>
-                            {errorMsg || 'Min: 5 XLM · Max: 100 XLM'}
-                        </p>
+                    <div className="flex justify-between mt-2 items-start">
+                        <div className="flex-1">
+                            {touched.amount && errors.amount ? (
+                                <FieldError error={errors.amount} />
+                            ) : (
+                                <p className="text-xs text-textMuted mt-1">
+                                    Min: 5 XLM · Max: 100 XLM
+                                </p>
+                            )}
+                        </div>
 
-                        <div className="flex gap-2">
-                            <button onClick={() => setAmount(10)} disabled={isSubmitting} className="text-[10px] font-bold px-2 py-1 rounded bg-background border border-borderCol hover:border-primary text-textSecondary hover:text-primary transition-colors disabled:opacity-50">10 XLM</button>
-                            <button onClick={() => setAmount(25)} disabled={isSubmitting} className="text-[10px] font-bold px-2 py-1 rounded bg-background border border-borderCol hover:border-primary text-textSecondary hover:text-primary transition-colors disabled:opacity-50">25 XLM</button>
-                            <button onClick={() => setAmount(50)} disabled={isSubmitting} className="text-[10px] font-bold px-2 py-1 rounded bg-background border border-borderCol hover:border-primary text-textSecondary hover:text-primary transition-colors disabled:opacity-50">50 XLM</button>
-                            <button onClick={() => setAmount(100)} disabled={isSubmitting} className="text-[10px] font-bold px-2 py-1 rounded bg-background border border-borderCol hover:border-primary text-textSecondary hover:text-primary transition-colors disabled:opacity-50">100 XLM</button>
+                        <div className="flex gap-2 justify-end">
+                            <button onClick={() => handleChange('amount', '10')} disabled={isSubmitting} className="text-[10px] font-bold px-2 py-1 rounded bg-background border border-borderCol hover:border-primary text-textSecondary hover:text-primary transition-colors disabled:opacity-50">10 XLM</button>
+                            <button onClick={() => handleChange('amount', '25')} disabled={isSubmitting} className="text-[10px] font-bold px-2 py-1 rounded bg-background border border-borderCol hover:border-primary text-textSecondary hover:text-primary transition-colors disabled:opacity-50">25 XLM</button>
+                            <button onClick={() => handleChange('amount', '50')} disabled={isSubmitting} className="text-[10px] font-bold px-2 py-1 rounded bg-background border border-borderCol hover:border-primary text-textSecondary hover:text-primary transition-colors disabled:opacity-50">50 XLM</button>
+                            <button onClick={() => handleChange('amount', '100')} disabled={isSubmitting} className="text-[10px] font-bold px-2 py-1 rounded bg-background border border-borderCol hover:border-primary text-textSecondary hover:text-primary transition-colors disabled:opacity-50">100 XLM</button>
                         </div>
                     </div>
                 </div>
 
-                <div>
-                    <label className="text-sm font-medium text-textSecondary mb-4 block">Repayment Period</label>
+                {/* Duration Range Input */}
+                <div className="space-y-1 mt-4">
+                    <label className="text-sm font-medium text-textSecondary mb-4 block">
+                        Repayment Period <span className="text-danger">*</span>
+                    </label>
                     <div className="px-2">
                         <input
                             type="range"
                             min="7"
                             max="30"
                             value={duration}
-                            onChange={(e) => setDuration(Number(e.target.value))}
+                            onChange={(e) => handleChange('duration', e.target.value)}
+                            onBlur={() => handleBlur('duration')}
                             className="w-full h-2 bg-background rounded-lg appearance-none cursor-pointer accent-primary"
                             disabled={isSubmitting}
                         />
@@ -161,6 +257,7 @@ export default function BorrowForm({ wallet, poolStats, onSuccess, showToast, ha
                         <span className="text-base text-textPrimary font-bold">{duration} days</span>
                         <span>30 days</span>
                     </div>
+                    {touched.duration && errors.duration && <FieldError error={errors.duration} />}
                 </div>
 
                 <div className="bg-background rounded-xl p-6 border border-borderCol shadow-inner mt-4">
@@ -198,8 +295,8 @@ export default function BorrowForm({ wallet, poolStats, onSuccess, showToast, ha
                         <p className="text-center text-xs text-textSecondary mb-3 animate-pulse">Waiting for Freighter confirmation...</p>
                     )}
                     <button
-                        onClick={handleBorrow}
-                        disabled={isSubmitting || !amount || Number(amount) < 5 || Number(amount) > 100 || !!errorMsg}
+                        onClick={handleConfirmClick}
+                        disabled={isSubmitting || (Object.keys(touched).length > 0 && Object.values(errors).some(e => e !== ''))}
                         className={`btn-primary w-full h-[52px] text-lg ${isSubmitting ? 'bg-primary/50 text-white/70' : ''}`}
                     >
                         {isSubmitting ? (
@@ -208,14 +305,31 @@ export default function BorrowForm({ wallet, poolStats, onSuccess, showToast, ha
                                 Processing...
                             </>
                         ) : (
-                            'Request Loan'
+                            'Review Loan Request'
                         )}
                     </button>
-                    {errorMsg && !isAmountTooHigh && (
-                        <p className="text-center text-danger text-xs mt-3 font-medium">{errorMsg}</p>
+                    {errors.amount && (!touched.amount) && numAmt > availableLiquidity && (
+                        <p className="text-center text-danger text-xs mt-3 font-medium">Pool does not have enough liquidity.</p>
                     )}
                 </div>
             </div>
+
+            <ConfirmationModal
+                isOpen={showConfirmModal}
+                onConfirm={handleConfirmedBorrow}
+                onCancel={() => setShowConfirmModal(false)}
+                title="Confirm Loan Request"
+                confirmLabel={`Borrow ${amount} XLM`}
+                confirmColor="green"
+                details={[
+                    { label: 'Principal', value: `${amount} XLM` },
+                    { label: 'Interest (5%)', value: `${formatXLM(interest)} XLM` },
+                    { label: 'Total Repayment', value: `${formatXLM(totalRepay)} XLM` },
+                    { label: 'Duration', value: `${duration} days` },
+                    { label: 'Due Date', value: dueString },
+                ]}
+                warning="You must repay this loan by the due date. Failure to repay will mark your loan as defaulted on-chain."
+            />
         </div>
     );
 }

@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { Clock, RefreshCw, CheckCircle, ExternalLink, AlertTriangle } from 'lucide-react';
 import { repayLoan } from '../utils/soroban';
 import { formatXLM, formatHash } from '../App';
+import ConfirmationModal from './ConfirmationModal';
 
 export default function ActiveLoanCard({ loan, wallet, onSuccess, showToast }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [status, setStatus] = useState('idle'); // idle, pending, success
     const [txHash, setTxHash] = useState('');
+    const [showRepayModal, setShowRepayModal] = useState(false);
 
     const principal = Number(loan.amount) / 10 ** 7 || 0;
     const durationDays = Number(loan.duration_days) || 14;
@@ -25,7 +27,8 @@ export default function ActiveLoanCard({ loan, wallet, onSuccess, showToast }) {
     const borrowDateStr = new Date(borrowTimeMs).toLocaleDateString();
     const dueDateStr = new Date(dueTimeMs).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-    const handleRepay = async () => {
+    const handleConfirmedRepay = async () => {
+        setShowRepayModal(false);
         setIsSubmitting(true);
         setStatus('pending');
         try {
@@ -177,7 +180,7 @@ export default function ActiveLoanCard({ loan, wallet, onSuccess, showToast }) {
                 )}
 
                 <button
-                    onClick={handleRepay}
+                    onClick={() => setShowRepayModal(true)}
                     disabled={isSubmitting}
                     className={`w-full h-[52px] text-lg ${isSubmitting ? 'opacity-50' : ''} ${isOverdue ? 'btn-danger' : 'btn-primary'}`}
                 >
@@ -192,6 +195,21 @@ export default function ActiveLoanCard({ loan, wallet, onSuccess, showToast }) {
                 </button>
             </div>
 
+            <ConfirmationModal
+                isOpen={showRepayModal}
+                onConfirm={handleConfirmedRepay}
+                onCancel={() => setShowRepayModal(false)}
+                title="Confirm Repayment"
+                confirmLabel={`Repay ${formatXLM(totalDueObj)} XLM`}
+                confirmColor="green"
+                details={[
+                    { label: 'Loan ID', value: `#${loan.loan_id}` },
+                    { label: 'Principal', value: `${formatXLM(principal)} XLM` },
+                    { label: 'Interest', value: `${formatXLM(interest)} XLM` },
+                    { label: 'Total Due', value: `${formatXLM(totalDueObj)} XLM` },
+                    { label: 'Due Date', value: dueDateStr },
+                ]}
+            />
         </div>
     );
 }
