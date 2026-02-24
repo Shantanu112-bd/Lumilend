@@ -124,19 +124,23 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-textPrimary font-sans">
+    <div className="min-h-screen bg-background text-textPrimary font-sans relative overflow-hidden">
+      {/* Background Glowing Orbs */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/20 blur-[120px] pointer-events-none z-0"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-accent/20 blur-[120px] pointer-events-none z-0"></div>
+
       {/* Header */}
-      <header className="h-[72px] border-b border-borderCol flex items-center justify-between px-6 sticky top-0 bg-background/80 backdrop-blur-md z-40">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-accent flex items-center justify-center shadow-lg shadow-accent/20">
+      <header className="h-[76px] border-b border-white/5 flex items-center justify-between px-6 sticky top-0 bg-background/50 backdrop-blur-2xl z-40">
+        <div className="flex items-center gap-3 relative z-10">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-accent flex items-center justify-center shadow-neon-primary">
             <Coins size={20} className="text-white" />
           </div>
-          <span className="text-xl font-bold tracking-tight">LumiLend</span>
+          <span className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">LumiLend</span>
         </div>
 
-        <div className="flex items-center gap-4 relative group">
-          <div className="flex items-center gap-3 bg-surface border border-borderCol rounded-full py-1.5 pl-2 pr-4 hover:border-primary/50 transition-colors cursor-pointer">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/80 to-accent/80 flex items-center justify-center text-xs font-bold text-white">
+        <div className="flex items-center gap-4 relative group z-10">
+          <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-full py-1.5 pl-2 pr-4 hover:border-primary/50 transition-all cursor-pointer shadow-glass hover:bg-white/10">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xs font-bold text-white shadow-inner">
               {wallet.substring(1, 3)}
             </div>
             <div className="flex flex-col">
@@ -145,10 +149,10 @@ export default function App() {
             </div>
           </div>
 
-          <div className="absolute right-0 top-full mt-2 w-48 bg-surface border border-borderCol rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+          <div className="absolute right-0 top-full mt-3 w-48 bg-surface/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
             <button
               onClick={handleDisconnect}
-              className="w-full text-left px-4 py-3 text-sm text-danger hover:bg-white/5 rounded-xl flex items-center gap-2"
+              className="w-full text-left px-4 py-3 text-sm text-danger hover:bg-danger/10 rounded-2xl flex items-center gap-2 transition-colors"
             >
               <LogOut size={16} /> Disconnect Wallet
             </button>
@@ -157,10 +161,10 @@ export default function App() {
       </header>
 
       {/* Main Layout */}
-      <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row relative">
+      <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row relative z-10">
 
         {/* Sidebar */}
-        <aside className="w-full md:w-[280px] p-6 shrink-0 border-b md:border-b-0 md:border-r border-borderCol min-h-[calc(100vh-72px)] hidden md:block">
+        <aside className="w-full md:w-[280px] p-6 shrink-0 border-b md:border-b-0 md:border-r border-white/5 min-h-[calc(100vh-76px)] hidden md:block">
           <nav className="space-y-2 mb-8">
             <SidebarItem icon={<ChartBar />} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
             <SidebarItem icon={<ArrowDownToLine />} label="Deposit" active={activeTab === 'deposit'} onClick={() => setActiveTab('deposit')} />
@@ -208,50 +212,87 @@ export default function App() {
               <PoolDashboard stats={poolStats} onRefresh={() => refreshAllData(wallet)} />
 
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-textPrimary">Quick Actions</h3>
+                <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">Quick Actions</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="card hover:border-primary/50 transition-colors">
-                    <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary mb-4">
+                  <div className="card group hover:border-primary/50 transition-all duration-500 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-[50px] group-hover:bg-primary/20 transition-all duration-500"></div>
+                    <div className="relative z-10 w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center text-primary mb-4 shadow-[0_0_15px_rgba(43,75,238,0.2)]">
                       <LockKeyhole size={24} />
                     </div>
-                    <h4 className="text-lg font-semibold mb-1">Deposit & Earn</h4>
-                    <p className="text-textSecondary text-sm mb-6">Add XLM to earn 5% interest</p>
-                    <button className="btn-primary w-full" onClick={() => setActiveTab('deposit')}>Deposit XLM</button>
+                    <h4 className="text-lg font-semibold mb-1 relative z-10 text-white group-hover:text-primary transition-colors">Deposit & Earn</h4>
+                    <p className="text-textSecondary text-sm mb-6 relative z-10">Add XLM to earn 5% interest dynamically</p>
+                    <button className="btn-primary w-full relative z-10" onClick={() => setActiveTab('deposit')}>Deposit XLM</button>
                   </div>
 
-                  <div className="card hover:border-primary/50 transition-colors">
-                    <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center text-accent mb-4">
+                  <div className="card group hover:border-accent/50 transition-all duration-500 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-full blur-[50px] group-hover:bg-accent/20 transition-all duration-500"></div>
+                    <div className="relative z-10 w-12 h-12 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 border border-accent/20 flex items-center justify-center text-accent mb-4 shadow-[0_0_15px_rgba(139,92,246,0.2)]">
                       <ArrowUpFromLine size={24} />
                     </div>
-                    <h4 className="text-lg font-semibold mb-1">Get a Loan</h4>
-                    <p className="text-textSecondary text-sm mb-6">Borrow 5–100 XLM at fixed rate</p>
-                    <button className="btn-ghost w-full" onClick={() => setActiveTab('borrow')}>Request Loan</button>
+                    <h4 className="text-lg font-semibold mb-1 relative z-10 text-white group-hover:text-accent transition-colors">Get a Loan</h4>
+                    <p className="text-textSecondary text-sm mb-6 relative z-10">Borrow 5–100 XLM at a fixed dynamic rate</p>
+                    <button className="btn-ghost w-full relative z-10 border-accent text-accent hover:bg-accent/10 hover:shadow-neon-accent" onClick={() => setActiveTab('borrow')}>Request Loan</button>
                   </div>
                 </div>
               </div>
 
               {/* Mock Activity */}
               <div className="space-y-4 pt-4">
-                <h3 className="text-lg font-semibold text-textPrimary">Recent Activity</h3>
-                <div className="card p-0 overflow-hidden">
+                <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">Recent Activity</h3>
+                <div className="card p-0 overflow-hidden border border-white/5 bg-background/40 backdrop-blur-xl">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm whitespace-nowrap">
-                      <thead className="bg-background text-textSecondary uppercase text-[11px] font-semibold">
+                      <thead className="bg-white/5 text-textSecondary uppercase text-[11px] font-semibold border-b border-white/5">
                         <tr>
-                          <th className="px-6 py-3">Type</th>
-                          <th className="px-6 py-3">Amount</th>
-                          <th className="px-6 py-3">Status</th>
-                          <th className="px-6 py-3">Date</th>
-                          <th className="px-6 py-3 text-right">Tx Hash</th>
+                          <th className="px-6 py-4 tracking-wider">Type</th>
+                          <th className="px-6 py-4 tracking-wider">Amount</th>
+                          <th className="px-6 py-4 tracking-wider">Status</th>
+                          <th className="px-6 py-4 tracking-wider">Date</th>
+                          <th className="px-6 py-4 text-right tracking-wider">Tx Hash</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-borderCol text-textPrimary">
-                        <tr className="hover:bg-white/5">
-                          <td className="px-6 py-4 font-medium flex items-center gap-2"><ArrowDownToLine size={16} className="text-primary" /> Deposit</td>
-                          <td className="px-6 py-4">50.00 XLM</td>
-                          <td className="px-6 py-4"><span className="px-2 py-1 bg-success/20 text-success rounded-full text-xs font-semibold">Success</span></td>
-                          <td className="px-6 py-4 text-textSecondary">Feb 24</td>
-                          <td className="px-6 py-4 text-right"><span className="font-mono text-accent text-xs">ABCD...WXYZ <ExternalLink size={10} className="inline" /></span></td>
+                      <tbody className="divide-y divide-white/5 text-textPrimary">
+                        <tr className="hover:bg-white/5 transition-colors duration-200">
+                          <td className="px-6 py-4 font-medium flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-success/10 flex items-center justify-center text-success">
+                              <ArrowDownToLine size={14} />
+                            </div>
+                            Deposit
+                          </td>
+                          <td className="px-6 py-4 font-semibold text-white">50.00 XLM</td>
+                          <td className="px-6 py-4">
+                            <span className="px-3 py-1 bg-success/10 border border-success/20 text-success rounded-full text-xs font-semibold flex items-center gap-1.5 w-fit">
+                              <span className="w-1.5 h-1.5 rounded-full bg-success drop-shadow-[0_0_4px_rgba(16,185,129,0.8)]"></span>
+                              Success
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-textSecondary">Feb 24, 2026</td>
+                          <td className="px-6 py-4 text-right">
+                            <span className="font-mono text-primary text-xs flex items-center justify-end gap-1 hover:text-accent transition-colors cursor-pointer">
+                              ABCD...WXYZ <ExternalLink size={12} />
+                            </span>
+                          </td>
+                        </tr>
+                        <tr className="hover:bg-white/5 transition-colors duration-200">
+                          <td className="px-6 py-4 font-medium flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center text-accent">
+                              <ArrowUpFromLine size={14} />
+                            </div>
+                            Borrow
+                          </td>
+                          <td className="px-6 py-4 font-semibold text-white">20.00 XLM</td>
+                          <td className="px-6 py-4">
+                            <span className="px-3 py-1 bg-success/10 border border-success/20 text-success rounded-full text-xs font-semibold flex items-center gap-1.5 w-fit">
+                              <span className="w-1.5 h-1.5 rounded-full bg-success drop-shadow-[0_0_4px_rgba(16,185,129,0.8)]"></span>
+                              Success
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-textSecondary">Feb 23, 2026</td>
+                          <td className="px-6 py-4 text-right">
+                            <span className="font-mono text-primary text-xs flex items-center justify-end gap-1 hover:text-accent transition-colors cursor-pointer">
+                              F9E1...J3K2 <ExternalLink size={12} />
+                            </span>
+                          </td>
                         </tr>
                       </tbody>
                     </table>
@@ -340,11 +381,11 @@ function SidebarItem({ icon, label, active, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm
-        ${active ? 'bg-primary/10 text-primary box-border border-l-4 border-l-primary' : 'text-textSecondary hover:text-textPrimary hover:bg-white/5 border-l-4 border-l-transparent'}
+      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 font-medium text-sm
+        ${active ? 'bg-primary/20 text-white shadow-inner shadow-primary/20 border border-primary/30' : 'text-textSecondary hover:text-white hover:bg-white/5 border border-transparent'}
       `}
     >
-      {icon}
+      <div className={`${active ? 'text-primary drop-shadow-[0_0_8px_rgba(43,75,238,0.8)]' : ''}`}>{icon}</div>
       <span>{label}</span>
     </button>
   );
@@ -354,12 +395,12 @@ function MobileTab({ icon, label, active, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-center justify-center w-full py-2
-        ${active ? 'text-primary' : 'text-textSecondary'}
+      className={`flex flex-col items-center justify-center w-full py-2 transition-all duration-300
+        ${active ? 'text-white' : 'text-textSecondary'}
       `}
     >
-      <div className="mb-1">{icon}</div>
-      <span className="text-[10px] uppercase font-bold tracking-wider">{label}</span>
+      <div className={`mb-1 ${active ? 'text-primary drop-shadow-[0_0_8px_rgba(43,75,238,0.8)]' : ''}`}>{icon}</div>
+      <span className={`text-[10px] uppercase font-bold tracking-wider ${active ? 'text-primary' : ''}`}>{label}</span>
     </button>
   );
 }
