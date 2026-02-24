@@ -26,7 +26,10 @@ export default {
             },
             boxShadow: {
                 'neon-primary': '0 0 15px rgba(43, 75, 238, 0.4)',
+                'neon-primary-hover': '0 0 20px rgba(43, 75, 238, 0.6)',
                 'neon-accent': '0 0 15px rgba(139, 92, 246, 0.4)',
+                'neon-danger': '0 0 15px rgba(239, 68, 68, 0.2)',
+                'neon-danger-hover': '0 0 20px rgba(239, 68, 68, 0.6)',
                 'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.36)'
             }
         },
