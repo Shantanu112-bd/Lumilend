@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { AlertTriangle, Clock, ArrowDownToLine, Coins, PaperAirplaneIcon, Info } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 
 export default function ConfirmationModal({
     isOpen,
