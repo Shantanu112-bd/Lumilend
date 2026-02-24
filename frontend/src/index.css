@@ -16,15 +16,29 @@
   }
 
   .btn-primary {
-    @apply bg-primary hover:bg-[#3d5cff] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-300 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed h-[44px] shadow-neon-primary hover:shadow-neon-primary-hover;
+    @apply bg-primary hover:bg-[#3d5cff] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-300 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed h-[44px];
+    box-shadow: 0 0 15px rgba(43, 75, 238, 0.4);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    box-shadow: 0 0 20px rgba(43, 75, 238, 0.6);
   }
 
   .btn-ghost {
-    @apply bg-transparent border border-primary text-primary hover:bg-primary/10 font-semibold py-2 px-4 rounded-xl transition-all duration-300 flex items-center justify-center h-[44px] disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-neon-primary;
+    @apply bg-transparent border border-primary text-primary hover:bg-primary/10 font-semibold py-2 px-4 rounded-xl transition-all duration-300 flex items-center justify-center h-[44px] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    box-shadow: 0 0 15px rgba(43, 75, 238, 0.4);
   }
 
   .btn-danger {
-    @apply bg-danger/10 border border-danger/50 hover:bg-danger text-white font-semibold flex items-center justify-center rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed h-[44px] px-4 shadow-neon-danger hover:shadow-neon-danger-hover;
+    @apply bg-danger/10 border border-danger/50 hover:bg-danger text-white font-semibold flex items-center justify-center rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed h-[44px] px-4;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+  }
+
+  .btn-danger:hover:not(:disabled) {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
   }
 
   .input {
