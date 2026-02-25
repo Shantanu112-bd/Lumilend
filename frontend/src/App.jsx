@@ -15,6 +15,7 @@ import SendForm from './components/SendForm';
 import ActiveLoanCard from './components/ActiveLoanCard';
 import PoolDashboard from './components/PoolDashboard';
 import LandingPage from './components/LandingPage';
+import ActivityFeed from './components/ActivityFeed';
 
 export const formatXLM = (num) => {
   return new Intl.NumberFormat('en-US', {
@@ -236,69 +237,7 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Mock Activity */}
-              <div className="space-y-4 pt-4">
-                <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">Recent Activity</h3>
-                <div className="card p-0 overflow-hidden border border-white/5 bg-background/40 backdrop-blur-xl">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm whitespace-nowrap">
-                      <thead className="bg-white/5 text-textSecondary uppercase text-[11px] font-semibold border-b border-white/5">
-                        <tr>
-                          <th className="px-6 py-4 tracking-wider">Type</th>
-                          <th className="px-6 py-4 tracking-wider">Amount</th>
-                          <th className="px-6 py-4 tracking-wider">Status</th>
-                          <th className="px-6 py-4 tracking-wider">Date</th>
-                          <th className="px-6 py-4 text-right tracking-wider">Tx Hash</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/5 text-textPrimary">
-                        <tr className="hover:bg-white/5 transition-colors duration-200">
-                          <td className="px-6 py-4 font-medium flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-success/10 flex items-center justify-center text-success">
-                              <ArrowDownToLine size={14} />
-                            </div>
-                            Deposit
-                          </td>
-                          <td className="px-6 py-4 font-semibold text-white">50.00 XLM</td>
-                          <td className="px-6 py-4">
-                            <span className="px-3 py-1 bg-success/10 border border-success/20 text-success rounded-full text-xs font-semibold flex items-center gap-1.5 w-fit">
-                              <span className="w-1.5 h-1.5 rounded-full bg-success drop-shadow-[0_0_4px_rgba(16,185,129,0.8)]"></span>
-                              Success
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-textSecondary">Feb 24, 2026</td>
-                          <td className="px-6 py-4 text-right">
-                            <span className="font-mono text-primary text-xs flex items-center justify-end gap-1 hover:text-accent transition-colors cursor-pointer">
-                              ABCD...WXYZ <ExternalLink size={12} />
-                            </span>
-                          </td>
-                        </tr>
-                        <tr className="hover:bg-white/5 transition-colors duration-200">
-                          <td className="px-6 py-4 font-medium flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center text-accent">
-                              <ArrowUpFromLine size={14} />
-                            </div>
-                            Borrow
-                          </td>
-                          <td className="px-6 py-4 font-semibold text-white">20.00 XLM</td>
-                          <td className="px-6 py-4">
-                            <span className="px-3 py-1 bg-success/10 border border-success/20 text-success rounded-full text-xs font-semibold flex items-center gap-1.5 w-fit">
-                              <span className="w-1.5 h-1.5 rounded-full bg-success drop-shadow-[0_0_4px_rgba(16,185,129,0.8)]"></span>
-                              Success
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-textSecondary">Feb 23, 2026</td>
-                          <td className="px-6 py-4 text-right">
-                            <span className="font-mono text-primary text-xs flex items-center justify-end gap-1 hover:text-accent transition-colors cursor-pointer">
-                              F9E1...J3K2 <ExternalLink size={12} />
-                            </span>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
+              <ActivityFeed accountId={wallet} />
             </div>
           )}
 
