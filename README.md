@@ -8,22 +8,28 @@ https://lumilend.vercel.app
 
 ## Features & Characteristics
 
-LumiLend is engineered with a modern, high-end technical architecture with the following distinct features:
+## Features & Characteristics
 
-### Smart Contract Backend (Soroban/Rust)
-- **Escrow Pool Liquidity:** All XLM deposited by lenders is held securely in the smart contract's decentralized pool.
-- **Dynamic Yield & Fixed Rates:** Built-in fixed interest rates (5% per period) calculated seamlessly on-chain.
-- **On-Chain Tracking:** Complete ledger state management using Soroban `DataKey` structures for tracking Lender balances, Active Loans, and global Pool Stats.
-- **Automated Default Logic:** Secure endpoints block unauthorized repayments. Built-in logic flags and allows liquidation of defaulted loans passing their `due_timestamp`.
-- **Robust Security Integration:** Full constraint checks natively in Rust (preventing loans exceeding pool liquidity, verifying auth payloads, checking minimum balances).
+LumiLend is engineered with a modern, high-end technical architecture with the following distinct features designed for both active Lenders and Borrowers.
 
-### Frontend Application (React 18 + Vite)
-- **Stellar Wallets Kit Integration:** Full secure connection with the Freighter wallet on the Stellar Testnet.
-- **Modern UI/UX:** Built using Tailwind CSS with glassmorphism, dynamic glowing orbs, elegant dark mode, and seamless micro-animations.
-- **Live Data Sync:** Efficient edge caching mapping to the Soroban RPC to simulate and read ledger states cleanly without spamming network requests.
-- **Action Previews:** Reactively updates your total Repayment amount and calculates precise Due Dates explicitly before you submit the Soroban transaction.
-- **Lost ID Auto-Recovery:** Seamless integration where the frontend can automatically recover lost active loan instances directly from the blockchain map by simulating generic queries if local storage drops.
-- **Comprehensive Error Handling:** Intelligent parsing of Soroban VM `ContractError` enum variants into human-readable UI warnings (e.g., "Insufficient pool liquidity", "You already have an active loan").
+### Core Roles & Functionality
+- **Lenders:** Users can seamlessly deposit XLM into the decentralized liquidity pool. Their deposited amounts are tracked on-chain, and they naturally accrue yield over time as borrowers pay standard fixed-interest rates back into the shared pool.
+- **Borrowers:** Users can request short-term, micro-loans ranging from **5 to 100 XLM** against the pool. The application strictly checks the pool's remaining available liquidity before approving the loan. Borrowers can choose flexible repayment duration sliders between 7 and 30 days.
+
+### Smart Contract Architecture (Rust/Soroban)
+- **Escrow Pool Liquidity & Mathematical Precision:** All XLM deposited by lenders is held securely in the smart contract's decentralized pool. Calculations use native 128-bit integer scaling to seamlessly process Stellar's native `10^7` stroop decimal accuracy.
+- **Dynamic Yield & Fixed Rates:** Built-in fixed interest rates (5% per period) calculated seamlessly on-chain depending on the total pool distribution.
+- **On-Chain State Tracking:** Complete ledger state management using Soroban `DataKey` structures for tracking individual Lender balances, mapping loan structs `(principal, interest, status)`, and calculating global overarching Pool Stats natively.
+- **Automated Default & Liquidations:** Secure endpoints naturally block unauthorized repayments. Built-in logic flags and allows permissionless liquidation functions of defaulted loans securely if the loan passes its strict `due_timestamp` epoch.
+- **Robust Security Integration:** Full constraint checks natively integrated in Rust using Soroban Auth scopes (`from.require_auth()`). This prevents loans from exceeding active pool liquidity, guarantees signature payloads, and enforces baseline integer constraints (like $>0$ XLM deposits).
+
+### Frontend Interface (React 18 + Vite)
+- **Stellar Wallets Kit Integration:** Full secure connection with the Freighter wallet (or xBull via modular setup) natively hooked to the Stellar Testnet. This fully abstracts the transaction signing flow.
+- **Premium UI & Glassmorphism:** Built entirely with advanced Tailwind CSS featuring frosted glass layers (`backdrop-blur-xl`), animated glowing background orbs, elegant dark mode palettes, and seamless transition states scaling natively on mobile and desktop.
+- **Intelligent Edge Caching:** Efficient local caching mapped to the `rpc.Server` SDK, simulating and reading ledger states safely without overwhelming network requests or unnecessarily freezing the UI. 
+- **Reactive Action Previews:** Dynamically updates your total Repayment amount, interest values, and parses precise human-readable Due Dates concurrently as you slide the Borrow duration slider — explicitly before submitting the transaction.
+- **Lost ID Auto-Recovery Scanner:** Seamless fallback mechanism where the Web UI can automatically recover lost active loan instances. If `localStorage` is cleared, the system scans generic loan IDs on the blockchain mapping to the connected wallet, recovering the session state effortlessly.
+- **Comprehensive Error Mapping:** Intelligent translation of Soroban VM `ContractError` enumerations into actionable, human-readable React Toast warnings (e.g., dynamically resolving `Error(Contract, #4)` to *"You already have an active loan. Please repay it first."*).
 
 ## Deployed Contract Information
 - **Contract ID:** `CDZIMDXFK5NNH2EWV3LG7JDDMDZFNZUMUWDSHEHAJ6YHO2C43JJOWKIZ`
