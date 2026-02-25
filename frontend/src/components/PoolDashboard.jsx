@@ -40,7 +40,7 @@ export default function PoolDashboard({ stats, onRefresh }) {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
+            <div className="flex flex-col md:grid md:grid-cols-2 lg:grid-cols-4 gap-6 relative">
                 {/* Background ambient glow for the grid */}
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] bg-primary/10 rounded-full blur-[100px] pointer-events-none -z-10"></div>
 

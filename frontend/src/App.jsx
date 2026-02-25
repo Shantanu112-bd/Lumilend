@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Wallet, LogOut, ArrowDownToLine, ArrowUpFromLine, Coins, CheckCircle, XCircle, Clock, RefreshCw, ExternalLink, Info, LockKeyhole, ChartBar, Send } from 'lucide-react';
+import { Wallet, LogOut, ArrowDownToLine, ArrowUpFromLine, Coins, CheckCircle, XCircle, Clock, RefreshCw, ExternalLink, Info, LockKeyhole, ChartBar, Send, Menu, X } from 'lucide-react';
 import {
   kit,
   getKitAddress,
@@ -43,6 +43,7 @@ export default function App() {
 
   // Navigation
   const [activeTab, setActiveTab] = useState('dashboard'); // dashboard, deposit, borrow, loans
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const showToastMsg = (message, type = 'success', hash = null) => {
     setToast({ show: true, message, type, hash });
@@ -140,7 +141,7 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-4 relative group z-10">
-          <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-full py-1.5 pl-2 pr-4 hover:border-primary/50 transition-all cursor-pointer shadow-glass hover:bg-white/10">
+          <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-full py-1.5 pl-2 pr-4 hover:border-primary/50 transition-all cursor-pointer shadow-glass hover:bg-white/10" style={{ minHeight: '44px' }}>
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xs font-bold text-white shadow-inner">
               {wallet.substring(1, 3)}
             </div>
@@ -154,10 +155,19 @@ export default function App() {
             <button
               onClick={handleDisconnect}
               className="w-full text-left px-4 py-3 text-sm text-danger hover:bg-danger/10 rounded-2xl flex items-center gap-2 transition-colors"
+              style={{ minHeight: '44px' }}
             >
               <LogOut size={16} /> Disconnect Wallet
             </button>
           </div>
+
+          <button
+            className="md:hidden ml-2 p-2 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center"
+            style={{ minHeight: '44px', minWidth: '44px' }}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
       </header>
 
@@ -165,13 +175,13 @@ export default function App() {
       <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row relative z-10">
 
         {/* Sidebar */}
-        <aside className="w-full md:w-[280px] p-6 shrink-0 border-b md:border-b-0 md:border-r border-white/5 min-h-[calc(100vh-76px)] hidden md:block">
+        <aside className={`${mobileMenuOpen ? 'fixed left-0 top-[76px] w-full h-[calc(100vh-76px)] z-30 bg-background/95 backdrop-blur-3xl px-6 py-8 overflow-y-auto' : 'hidden md:block'} md:w-[280px] p-6 shrink-0 border-b md:border-b-0 md:border-r border-white/5 min-h-[calc(100vh-76px)]`}>
           <nav className="space-y-2 mb-8">
-            <SidebarItem icon={<ChartBar />} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
-            <SidebarItem icon={<ArrowDownToLine />} label="Deposit" active={activeTab === 'deposit'} onClick={() => setActiveTab('deposit')} />
-            <SidebarItem icon={<Send />} label="Send XLM" active={activeTab === 'send'} onClick={() => setActiveTab('send')} />
-            <SidebarItem icon={<Coins />} label="Borrow" active={activeTab === 'borrow'} onClick={() => setActiveTab('borrow')} />
-            <SidebarItem icon={<Clock />} label="My Loans" active={activeTab === 'loans'} onClick={() => setActiveTab('loans')} indicator={activeLoan && activeLoan.status === 'Active'} />
+            <SidebarItem icon={<ChartBar />} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => { setActiveTab('dashboard'); setMobileMenuOpen(false); }} />
+            <SidebarItem icon={<ArrowDownToLine />} label="Deposit" active={activeTab === 'deposit'} onClick={() => { setActiveTab('deposit'); setMobileMenuOpen(false); }} />
+            <SidebarItem icon={<Send />} label="Send XLM" active={activeTab === 'send'} onClick={() => { setActiveTab('send'); setMobileMenuOpen(false); }} />
+            <SidebarItem icon={<Coins />} label="Borrow" active={activeTab === 'borrow'} onClick={() => { setActiveTab('borrow'); setMobileMenuOpen(false); }} />
+            <SidebarItem icon={<Clock />} label="My Loans" active={activeTab === 'loans'} onClick={() => { setActiveTab('loans'); setMobileMenuOpen(false); }} indicator={activeLoan && activeLoan.status === 'Active'} />
           </nav>
 
           <div className="card p-5 border-t-2 border-t-accent/50 bg-surface/50">
@@ -196,15 +206,6 @@ export default function App() {
             </div>
           </div>
         </aside>
-
-        {/* Mobile Tab Bar */}
-        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-borderCol z-50 flex justify-around p-2 pb-safe">
-          <MobileTab icon={<ChartBar />} label="Overview" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
-          <MobileTab icon={<ArrowDownToLine />} label="Deposit" active={activeTab === 'deposit'} onClick={() => setActiveTab('deposit')} />
-          <MobileTab icon={<Send />} label="Send" active={activeTab === 'send'} onClick={() => setActiveTab('send')} />
-          <MobileTab icon={<Coins />} label="Borrow" active={activeTab === 'borrow'} onClick={() => setActiveTab('borrow')} />
-          <MobileTab icon={<Clock />} label="Loans" active={activeTab === 'loans'} onClick={() => setActiveTab('loans')} indicator={activeLoan && activeLoan.status === 'Active'} />
-        </div>
 
         {/* Main Content Area */}
         <main className="flex-1 p-4 md:p-8 pb-32 md:pb-8">
@@ -316,7 +317,7 @@ export default function App() {
         hash={toast.hash}
         onClose={closeToast}
       />
-    </div>
+    </div >
   );
 }
 
@@ -333,25 +334,6 @@ function SidebarItem({ icon, label, active, onClick, indicator }) {
       {indicator && (
         <span className="absolute top-3.5 right-4 w-2 h-2 rounded-full bg-warning drop-shadow-[0_0_4px_rgba(245,158,11,0.8)]" />
       )}
-    </button>
-  );
-}
-
-function MobileTab({ icon, label, active, onClick, indicator }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`relative flex flex-col items-center justify-center w-full py-2 transition-all duration-300
-        ${active ? 'text-white' : 'text-textSecondary'}
-      `}
-    >
-      <div className={`mb-1 relative ${active ? 'text-primary drop-shadow-[0_0_8px_rgba(43,75,238,0.8)]' : ''}`}>
-        {icon}
-        {indicator && (
-          <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-warning drop-shadow-[0_0_4px_rgba(245,158,11,0.8)]" />
-        )}
-      </div>
-      <span className={`text-[10px] uppercase font-bold tracking-wider ${active ? 'text-primary' : ''}`}>{label}</span>
     </button>
   );
 }

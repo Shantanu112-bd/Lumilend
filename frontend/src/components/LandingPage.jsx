@@ -10,12 +10,14 @@ export default function LandingPage({ onConnect, poolStats }) {
                     <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-accent flex items-center justify-center shadow-lg shadow-accent/20">
                         <Coins size={20} className="text-white" />
                     </div>
-                    <span className="text-xl font-bold tracking-tight">LumiLend</span>
+                    <span className="text-xl font-bold tracking-tight hidden sm:block">LumiLend</span>
+                    <div className="px-2 py-0.5 bg-success/20 text-success text-[10px] font-bold rounded-full uppercase tracking-wider ml-2 border border-success/30">Testnet</div>
                 </div>
 
-                <button onClick={onConnect} className="btn-primary space-x-2">
+                <button onClick={onConnect} className="btn-primary space-x-2" style={{ minHeight: '44px' }}>
                     <Wallet size={18} />
-                    <span>Connect Wallet</span>
+                    <span className="hidden sm:inline">Connect Wallet</span>
+                    <span className="sm:hidden">Connect</span>
                 </button>
             </header>
 
