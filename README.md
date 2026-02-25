@@ -8,8 +8,6 @@ https://frontend-lac-psi-36.vercel.app
 
 ## Features & Characteristics
 
-## Features & Characteristics
-
 LumiLend is engineered with a modern, high-end technical architecture with the following distinct features designed for both active Lenders and Borrowers.
 
 ### Core Roles & Functionality
@@ -79,7 +77,10 @@ cd contracts/lumilend
 cargo test
 ```
 
-### Test Output
+### Test Output Screenshot
+![Tests](./test-output.png)
+
+### Test Output Text
 The contract features a robust set of tests designed to enforce borrowing and liquidity constraints. Below is the successful output verifying the smart contract's integrity:
 
 ```text
