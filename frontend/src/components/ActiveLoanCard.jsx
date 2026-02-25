@@ -35,6 +35,7 @@ export default function ActiveLoanCard({ loan, wallet, onSuccess, showToast }) {
             const hash = await repayLoan(loan.loan_id);
             setTxHash(hash);
             setStatus('success');
+            localStorage.removeItem(`lumilend_loan_${wallet}`);
             onSuccess();
             showToast(`Loan #${loan.loan_id} repaid successfully!`, 'success', hash);
         } catch (error) {

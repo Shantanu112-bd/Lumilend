@@ -170,7 +170,7 @@ export default function App() {
             <SidebarItem icon={<ArrowDownToLine />} label="Deposit" active={activeTab === 'deposit'} onClick={() => setActiveTab('deposit')} />
             <SidebarItem icon={<Send />} label="Send XLM" active={activeTab === 'send'} onClick={() => setActiveTab('send')} />
             <SidebarItem icon={<Coins />} label="Borrow" active={activeTab === 'borrow'} onClick={() => setActiveTab('borrow')} />
-            <SidebarItem icon={<Clock />} label="My Loans" active={activeTab === 'loans'} onClick={() => setActiveTab('loans')} />
+            <SidebarItem icon={<Clock />} label="My Loans" active={activeTab === 'loans'} onClick={() => setActiveTab('loans')} indicator={activeLoan && activeLoan.status === 'Active'} />
           </nav>
 
           <div className="card p-5 border-t-2 border-t-accent/50 bg-surface/50">
@@ -202,7 +202,7 @@ export default function App() {
           <MobileTab icon={<ArrowDownToLine />} label="Deposit" active={activeTab === 'deposit'} onClick={() => setActiveTab('deposit')} />
           <MobileTab icon={<Send />} label="Send" active={activeTab === 'send'} onClick={() => setActiveTab('send')} />
           <MobileTab icon={<Coins />} label="Borrow" active={activeTab === 'borrow'} onClick={() => setActiveTab('borrow')} />
-          <MobileTab icon={<Clock />} label="Loans" active={activeTab === 'loans'} onClick={() => setActiveTab('loans')} />
+          <MobileTab icon={<Clock />} label="Loans" active={activeTab === 'loans'} onClick={() => setActiveTab('loans')} indicator={activeLoan && activeLoan.status === 'Active'} />
         </div>
 
         {/* Main Content Area */}
@@ -336,7 +336,11 @@ export default function App() {
               <BorrowForm
                 wallet={wallet}
                 poolStats={poolStats}
-                onSuccess={() => { refreshAllData(wallet); setActiveTab('loans'); }}
+                onSuccess={(loan) => {
+                  if (loan) setActiveLoan(loan);
+                  refreshAllData(wallet);
+                  setActiveTab('loans');
+                }}
                 showToast={showToastMsg}
                 hasActiveLoan={activeLoan && activeLoan.status === 'Active'}
               />
@@ -377,29 +381,37 @@ export default function App() {
   );
 }
 
-function SidebarItem({ icon, label, active, onClick }) {
+function SidebarItem({ icon, label, active, onClick, indicator }) {
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 font-medium text-sm
+      className={`relative w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 font-medium text-sm
         ${active ? 'bg-primary/20 text-white shadow-inner shadow-primary/20 border border-primary/30' : 'text-textSecondary hover:text-white hover:bg-white/5 border border-transparent'}
       `}
     >
       <div className={`${active ? 'text-primary drop-shadow-[0_0_8px_rgba(43,75,238,0.8)]' : ''}`}>{icon}</div>
       <span>{label}</span>
+      {indicator && (
+        <span className="absolute top-3.5 right-4 w-2 h-2 rounded-full bg-warning drop-shadow-[0_0_4px_rgba(245,158,11,0.8)]" />
+      )}
     </button>
   );
 }
 
-function MobileTab({ icon, label, active, onClick }) {
+function MobileTab({ icon, label, active, onClick, indicator }) {
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-center justify-center w-full py-2 transition-all duration-300
+      className={`relative flex flex-col items-center justify-center w-full py-2 transition-all duration-300
         ${active ? 'text-white' : 'text-textSecondary'}
       `}
     >
-      <div className={`mb-1 ${active ? 'text-primary drop-shadow-[0_0_8px_rgba(43,75,238,0.8)]' : ''}`}>{icon}</div>
+      <div className={`mb-1 relative ${active ? 'text-primary drop-shadow-[0_0_8px_rgba(43,75,238,0.8)]' : ''}`}>
+        {icon}
+        {indicator && (
+          <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-warning drop-shadow-[0_0_4px_rgba(245,158,11,0.8)]" />
+        )}
+      </div>
       <span className={`text-[10px] uppercase font-bold tracking-wider ${active ? 'text-primary' : ''}`}>{label}</span>
     </button>
   );

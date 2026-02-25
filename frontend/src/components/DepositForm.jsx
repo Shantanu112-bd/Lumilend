@@ -36,6 +36,7 @@ export default function DepositForm({ wallet, balance, poolStats, onSuccess, sho
     const newPoolSize = currentPool + numAmt;
     const newShare = newPoolSize > 0 ? ((numAmt / newPoolSize) * 100).toFixed(4) : 0;
     const estYield = numAmt * 0.05; // 5% APY
+    const newWalletBalance = parseFloat(balance) - numAmt;
 
     const validateAmount = (val) => {
         const num = parseFloat(val);
@@ -227,23 +228,46 @@ export default function DepositForm({ wallet, balance, poolStats, onSuccess, sho
                     </div>
                 </div>
 
-                <div className="bg-background rounded-xl p-5 border border-borderCol">
-                    <h4 className="text-sm font-semibold text-textPrimary mb-4">After Deposit</h4>
-                    <div className="space-y-3 text-sm">
-                        <div className="flex justify-between">
-                            <span className="text-textSecondary">New Pool Size</span>
-                            <span className="text-textPrimary font-medium">{formatXLM(newPoolSize)} XLM</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-textSecondary">Your Share</span>
-                            <span className="text-textPrimary font-medium">{newShare}%</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-textSecondary">Est. Annual Yield</span>
-                            <span className="text-success font-medium">+{formatXLM(estYield)} XLM <span className="text-xs opacity-70">(5% APY)</span></span>
+                {numAmt > 0 && (
+                    <div className="bg-background rounded-xl p-5 border border-borderCol">
+                        <h4 className="text-sm font-semibold text-textPrimary mb-4 flex items-center gap-2"><span>📊</span> After Deposit</h4>
+                        <div className="space-y-3 text-sm">
+                            <div className="flex justify-between">
+                                <span className="text-textSecondary">New Pool Size</span>
+                                <div className="text-right">
+                                    <span className="text-textPrimary font-medium">{formatXLM(newPoolSize)} XLM</span>
+                                    <span className="text-xs text-textMuted ml-2">
+                                        (was {formatXLM(currentPool)} XLM)
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-textSecondary">Your Pool Share</span>
+                                <span className="text-textPrimary font-medium">{newShare}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-textSecondary flex items-center gap-1">Est. Annual Yield <span title="Based on 5% fixed APY on your deposit amount" className="cursor-help text-textMuted">ⓘ</span></span>
+                                <span className="text-success font-medium">+{formatXLM(estYield)} XLM <span className="text-xs opacity-70">(5% APY)</span></span>
+                            </div>
+
+                            <div className="flex justify-between items-center border-t border-borderCol pt-3 mt-3">
+                                <span className="text-sm text-textSecondary">Your New Wallet Balance</span>
+                                <span className={`font-semibold ${newWalletBalance < 1
+                                        ? 'text-danger'   // warn if going below minimum
+                                        : 'text-textPrimary'
+                                    }`}>
+                                    {formatXLM(newWalletBalance)} XLM
+                                </span>
+                            </div>
+
+                            {newWalletBalance < 1 && (
+                                <p className="text-xs text-warning flex items-center gap-1 mt-2">
+                                    ⚠️ Keep at least 1 XLM in wallet for Stellar minimum balance.
+                                </p>
+                            )}
                         </div>
                     </div>
-                </div>
+                )}
 
                 <div className="pt-2">
                     {status === 'pending' && (
