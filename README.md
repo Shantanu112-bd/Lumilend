@@ -63,11 +63,27 @@ https://stellar.expert/explorer/testnet/tx/0dc4417bd5ab64745e06fe278da933144bcd8
    npm run dev
    ```
 
-## Running Tests
-To run the automated tests covering `deposit`, `request_loan`, `repay_loan`, and error states:
+## Running Smart Contract Tests
+
+To run the automated test suite covering `deposit`, `request_loan`, `repay_loan`, liquidation logic, and various contract error states, navigate to the `contracts/lumilend` directory and run:
 
 ```bash
 cd contracts/lumilend
-cargo run test -- --nocapture
+cargo test
 ```
-You should see 6 passing tests.
+
+### Test Output
+
+The contract features a robust set of tests designed to enforce borrowing and liquidity constraints. Below is the successful output verifying the smart contract's integrity:
+
+```text
+running 6 tests
+test test::test_borrow_exceeds_liquidity_fails - should panic ... ok
+test test::test_deposit_success ... ok
+test test::test_double_borrow_fails - should panic ... ok
+test test::test_liquidate_before_due_fails - should panic ... ok
+test test::test_borrow_success ... ok
+test test::test_repay_success ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+```
