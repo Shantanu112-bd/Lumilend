@@ -30,9 +30,11 @@ LumiLend is engineered with a modern, high-end technical architecture with the f
 - **Comprehensive Error Mapping:** Intelligent translation of Soroban VM `ContractError` enumerations into actionable, human-readable React Toast warnings (e.g., dynamically resolving `Error(Contract, #4)` to *"You already have an active loan. Please repay it first."*).
 
 ## Deployed Contract Information
-- **Contract ID:** `CDZIMDXFK5NNH2EWV3LG7JDDMDZFNZUMUWDSHEHAJ6YHO2C43JJOWKIZ`
+- **LendingPool Contract ID:** `CDTPCOTNCQXWKZLPGF56QWZ6TWNP3I4YYYK7G3ABCNT5DQGB4VKSA4J2`
+- **PriceOracle Contract ID:** `CAXH2PKPWKWFF7TXLGITWH7M6TFZAIOKIPAX2OOFKU2N355YGARPUOP5`
+- **LumiToken Contract ID:** `CABLMCLLYYTCFJ6AG7TKF6WBGMSWKQDEDM2BNJZNQKMIG3VERPFDUHPC`
 - **Network:** Stellar Testnet (`https://soroban-testnet.stellar.org`)
-- **Explorer:** [View on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CDZIMDXFK5NNH2EWV3LG7JDDMDZFNZUMUWDSHEHAJ6YHO2C43JJOWKIZ)
+- **Explorer:** [View Pool on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CDTPCOTNCQXWKZLPGF56QWZ6TWNP3I4YYYK7G3ABCNT5DQGB4VKSA4J2)
 
 ## Tech Stack
 - **Frontend:** React 18, Vite, Tailwind CSS, Lucide Icons
@@ -60,7 +62,16 @@ LumiLend is engineered with a modern, high-end technical architecture with the f
    ```
    Add a `.env` file inside the `frontend/` directory with:
    ```env
-   VITE_CONTRACT_ID=CDZIMDXFK5NNH2EWV3LG7JDDMDZFNZUMUWDSHEHAJ6YHO2C43JJOWKIZ
+   NEXT_PUBLIC_LENDING_POOL_CONTRACT_ID=CDTPCOTNCQXWKZLPGF56QWZ6TWNP3I4YYYK7G3ABCNT5DQGB4VKSA4J2
+   NEXT_PUBLIC_PRICE_ORACLE_CONTRACT_ID=CAXH2PKPWKWFF7TXLGITWH7M6TFZAIOKIPAX2OOFKU2N355YGARPUOP5
+   NEXT_PUBLIC_LUMI_TOKEN_CONTRACT_ID=CABLMCLLYYTCFJ6AG7TKF6WBGMSWKQDEDM2BNJZNQKMIG3VERPFDUHPC
+   NEXT_PUBLIC_STELLAR_NETWORK=testnet
+   NEXT_PUBLIC_HORIZON_URL=https://horizon-testnet.stellar.org
+   
+   VITE_CONTRACT_ID=CDTPCOTNCQXWKZLPGF56QWZ6TWNP3I4YYYK7G3ABCNT5DQGB4VKSA4J2
+   VITE_HORIZON_URL=https://horizon-testnet.stellar.org
+   VITE_SOROBAN_RPC=https://soroban-testnet.stellar.org
+   VITE_NETWORK_PASSPHRASE=Test SDF Network ; September 2015
    ```
 
 3. **Run the local dev server:**

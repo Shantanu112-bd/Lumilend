@@ -29,6 +29,33 @@ export const formatHash = (hash) => {
   return `${hash.substring(0, 6)}...${hash.substring(hash.length - 6)}`;
 };
 
+export class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("ErrorBoundary caught an error", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-background text-textPrimary flex flex-col items-center justify-center p-6">
+          <div className="card max-w-md w-full border-danger/50 bg-danger/10 text-center">
+            <h2 className="text-xl font-bold text-danger mb-4">Something went wrong</h2>
+            <p className="text-textSecondary mb-6">{this.state.error?.message || "An unexpected error occurred in the UI."}</p>
+            <button className="btn-primary" onClick={() => window.location.reload()}>Reload Application</button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function App() {
   const [wallet, setWallet] = useState(null);
   const [balance, setBalance] = useState('0');
@@ -138,6 +165,9 @@ export default function App() {
             <Coins size={20} className="text-white" />
           </div>
           <span className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">LumiLend</span>
+          <div className="hidden sm:flex px-2 py-0.5 bg-success/20 text-success text-[10px] font-bold rounded-full uppercase tracking-wider border border-success/30 ml-2">
+            Testnet
+          </div>
         </div>
 
         <div className="flex items-center gap-4 relative group z-10">
