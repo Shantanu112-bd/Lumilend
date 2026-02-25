@@ -92,12 +92,71 @@ export async function fetchActiveLoan(walletPubkey) {
     if (!CONTRACT_ID) return null;
     return getCached(`activeLoan_${walletPubkey}`, 10000, async () => {
         try {
-            // Wait, the PRD doesn't have a `get_active_loan_by_borrower` method!
-            // Let's iterate or find the ActiveLoan data key. Let's just catch and return null for now, or just simulate checking latest loan.
-            // Oh right, the smart contract doesn't explicitly have `get_active_loan_id(from)` in public functions, unless we read ledger entry directly.
-            // Let's mock it for the demo if not available.
+            let loanId = localStorage.getItem(`lumilend_loan_${walletPubkey}`);
+
+            const contract = new Contract(CONTRACT_ID);
+            const sourceAccount = await getSourceAccount();
+            const builder = new TransactionBuilder(sourceAccount, { fee: '100', networkPassphrase: NETWORK_PASSPHRASE });
+
+            // If loanId is missing, try scanning recent loans to recover it
+            if (!loanId) {
+                // We'll scan from 1 up to a reasonable max (e.g., 20) for demo purposes, 
+                // since we don't have a reliable way to know the `next_loan_id` from the outside without a dedicated view function.
+                for (let i = 1; i <= 20; i++) {
+                    try {
+                        const txScan = new TransactionBuilder(sourceAccount, { fee: '100', networkPassphrase: NETWORK_PASSPHRASE })
+                            .addOperation(contract.call('get_loan', nativeToScVal(i, { type: 'u64' })))
+                            .setTimeout(30).build();
+
+                        const resScan = await server.simulateTransaction(txScan);
+                        if (rpc.Api.isSimulationSuccess(resScan)) {
+                            const loanData = scValToNative(resScan.result.retval);
+
+                            if (loanData.borrower === walletPubkey) {
+                                const statusName = typeof loanData.status === 'object' ? Object.keys(loanData.status)[0] : loanData.status;
+                                if (statusName === 'Active' || loanData.status === 0) {
+                                    loanId = i.toString();
+                                    localStorage.setItem(`lumilend_loan_${walletPubkey}`, loanId);
+                                    break; // Found it!
+                                }
+                            }
+                        }
+                    } catch (scanErr) {
+                        // Ignore errors for individual non-existent loans in the scan
+                    }
+                }
+            }
+
+            if (!loanId) return null; // Still not found after scanning
+
+            const tx = builder.addOperation(contract.call('get_loan', nativeToScVal(Number(loanId), { type: 'u64' }))).setTimeout(30).build();
+            const res = await server.simulateTransaction(tx);
+
+            if (rpc.Api.isSimulationSuccess(res)) {
+                const loan = scValToNative(res.result.retval);
+                const statusName = typeof loan.status === 'object' ? Object.keys(loan.status)[0] : loan.status;
+                if (statusName === 'Active' || loan.status === 0) {
+                    const dueTimestamp = Number(loan.due_timestamp);
+                    const nowSecs = Math.floor(Date.now() / 1000);
+                    const diffDays = Math.ceil((dueTimestamp - nowSecs) / 86400);
+
+                    return {
+                        loan_id: loanId,
+                        amount: loan.principal.toString(),
+                        interest_owed: loan.interest_owed.toString(),
+                        due_timestamp: dueTimestamp,
+                        duration_days: Math.max(1, diffDays),
+                        status: 'Active'
+                    };
+                } else {
+                    // Loan is not active, maybe it was repaid elsewhere
+                    localStorage.removeItem(`lumilend_loan_${walletPubkey}`);
+                    return null;
+                }
+            }
             return null;
         } catch (e) {
+            console.error("fetchActiveLoan Error", e);
             return null;
         }
     });
@@ -154,9 +213,38 @@ async function submitSorobanTransaction(operationCall) {
         throw new Error("Simulation failed. Check pool liquidity or constraints.");
     }
 
+    if (!rpc.Api.isSimulationError(sim) && !rpc.Api.isSimulationSuccess(sim)) {
+        console.error("Simulation had no success but also no explicitly formatted error?", sim);
+    }
+
     if (!rpc.Api.isSimulationSuccess(sim)) {
-        console.error("Simulation failed:", sim);
-        throw new Error("Simulation rejected by node.");
+        console.error("Simulation failed object:", JSON.stringify(sim, null, 2));
+
+        // Parse contract specific errors based on ContractError enum in lib.rs
+        if (sim.error) {
+            if (sim.error.includes("Error(Contract, #1)")) throw new Error("Contract already initialized.");
+            if (sim.error.includes("Error(Contract, #2)")) throw new Error("Insufficient pool liquidity.");
+            if (sim.error.includes("Error(Contract, #3)")) throw new Error("Insufficient balance.");
+            if (sim.error.includes("Error(Contract, #4)")) throw new Error("You already have an active loan. Please repay it first.");
+            if (sim.error.includes("Error(Contract, #5)")) throw new Error("Loan not found.");
+            if (sim.error.includes("Error(Contract, #6)")) throw new Error("Loan is not active.");
+            if (sim.error.includes("Error(Contract, #7)")) throw new Error("Repayment amount too low.");
+            if (sim.error.includes("Error(Contract, #8)")) throw new Error("Loan not yet defaulted.");
+            if (sim.error.includes("Error(Contract, #9)")) throw new Error("Unauthorized action.");
+        }
+
+        let errMsg = "Simulation rejected by node.";
+        if (sim.error) errMsg += " " + sim.error;
+        throw new Error(errMsg);
+    }
+
+    let retval = null;
+    if (sim.result && sim.result.retval) {
+        try {
+            retval = scValToNative(sim.result.retval);
+        } catch (e) {
+            console.warn("Could not parse retval into native", e);
+        }
     }
 
     const preparedTx = rpc.assembleTransaction(tx, sim).build();
@@ -181,7 +269,7 @@ async function submitSorobanTransaction(operationCall) {
     }
 
     if (txResponse.status === "SUCCESS") {
-        return submitRes.hash;
+        return { hash: submitRes.hash, result: retval };
     } else {
         throw new Error(`Transaction failed on ledger.`);
     }
@@ -197,7 +285,8 @@ export async function depositXlm(amount) {
         new Address(address).toScVal(),
         nativeToScVal(amountStroops, { type: 'i128' })
     );
-    return await submitSorobanTransaction(op);
+    const { hash } = await submitSorobanTransaction(op);
+    return hash;
 }
 
 export async function requestLoan(amount, durationDays) {
@@ -223,5 +312,6 @@ export async function repayLoan(loanId) {
         new Address(address).toScVal(),
         nativeToScVal(Number(loanId), { type: 'u64' })
     );
-    return await submitSorobanTransaction(op);
+    const { hash } = await submitSorobanTransaction(op);
+    return hash;
 }
