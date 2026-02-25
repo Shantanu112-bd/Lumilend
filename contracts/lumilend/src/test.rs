@@ -13,6 +13,10 @@ impl MockOracle {
     pub fn get_price(_env: Env, _asset: soroban_sdk::Symbol) -> i128 {
         1000000 // Mock XLM price 0.10 USD
     }
+
+    pub fn mint(_env: Env, _to: Address, _amount: i128) {
+        // Mock mint
+    }
 }
 
 fn setup_test() -> (Env, LumiLendPoolClient<'static>, Address, Address, Address, TokenClient<'static>, TokenAdminClient<'static>) {
@@ -32,7 +36,7 @@ fn setup_test() -> (Env, LumiLendPoolClient<'static>, Address, Address, Address,
     let lender = Address::generate(&env);
     let borrower = Address::generate(&env);
 
-    client.initialize(&token_contract.address(), &500, &oracle_id); // 5% interest rate
+    client.initialize(&token_contract.address(), &500, &oracle_id, &oracle_id); // 5% interest rate
 
     (env, client, lender, borrower, admin, token_client, token_admin_client)
 }

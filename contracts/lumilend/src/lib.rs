@@ -27,6 +27,7 @@ pub enum DataKey {
     ActiveLoan(Address),
     Oracle(Address),
     OracleAddress,
+    RewardTokenAddress,
 }
 
 #[contracttype]
@@ -76,7 +77,7 @@ pub struct LumiLendPool;
 
 #[contractimpl]
 impl LumiLendPool {
-    pub fn initialize(env: Env, token: Address, interest_rate_bps: u32, oracle: Address) -> Result<(), ContractError> {
+    pub fn initialize(env: Env, token: Address, interest_rate_bps: u32, oracle: Address, reward_token: Address) -> Result<(), ContractError> {
         if env.storage().instance().has(&DataKey::PoolState) {
             return Err(ContractError::AlreadyInitialized);
         }
@@ -89,6 +90,7 @@ impl LumiLendPool {
         env.storage().instance().set(&DataKey::PoolState, &pool_state);
         env.storage().instance().set(&DataKey::Token, &token);
         env.storage().instance().set(&DataKey::OracleAddress, &oracle);
+        env.storage().instance().set(&DataKey::RewardTokenAddress, &reward_token);
         env.storage().instance().set(&DataKey::NextLoanId, &1u64);
         
         Ok(())
@@ -236,6 +238,21 @@ impl LumiLendPool {
         pool_state.total_lent -= loan_record.principal;
         pool_state.total_deposited += loan_record.interest_owed;
         env.storage().instance().set(&DataKey::PoolState, &pool_state);
+
+        // Mint LUMI rewards on successful repayment within due_timestamp
+        // (Assuming on-time if the transaction succeeds, we check due_date)
+        if env.ledger().timestamp() <= loan_record.due_timestamp {
+            if let Some(reward_token_addr) = env.storage().instance().get::<_, Address>(&DataKey::RewardTokenAddress) {
+                // Reward is dynamically scaled, for instance 10% of principal in LUMI
+                let reward_amount = loan_record.principal / 10;
+                use soroban_sdk::{symbol_short, vec, IntoVal};
+                let _ = env.invoke_contract::<()>(
+                    &reward_token_addr,
+                    &symbol_short!("mint"),
+                    vec![&env, from.into_val(&env), reward_amount.into_val(&env)]
+                );
+            }
+        }
 
         Ok(())
     }
