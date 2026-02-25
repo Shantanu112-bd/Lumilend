@@ -48,8 +48,8 @@ export default function BorrowForm({ wallet, poolStats, onSuccess, showToast, ha
             newErrors.duration = 'Loan duration is required.';
         else if (days < 7)
             newErrors.duration = 'Minimum duration is 7 days.';
-        else if (days > 30)
-            newErrors.duration = 'Maximum duration is 30 days.';
+        else if (days > 90)
+            newErrors.duration = 'Maximum duration is 90 days.';
 
         setErrors(prev => ({ ...prev, ...newErrors }));
         return Object.keys(newErrors).length === 0;
@@ -112,10 +112,35 @@ export default function BorrowForm({ wallet, poolStats, onSuccess, showToast, ha
         setIsSubmitting(true);
         setStatus('pending');
         try {
-            const hash = await requestLoan(amount, duration);
+            const { hash, result: loanId } = await requestLoan(amount, duration);
             setTxHash(hash);
+
+            // Save loan_id to localStorage so it persists across refresh
+            localStorage.setItem(`lumilend_loan_${wallet}`, loanId);
+
+            // Calculate loan details
+            const interestOwed = parseFloat(amount) * 0.05;
+            const dueDate = new Date(Date.now() + duration * 86400 * 1000);
+
+            // Trigger parent event
+            if (onSuccess) {
+                onSuccess({
+                    loan_id: loanId,
+                    principal: parseFloat(amount),
+                    interest_owed: interestOwed,
+                    total_due: parseFloat(amount) + interestOwed,
+                    due_timestamp: Math.floor(dueDate.getTime() / 1000),
+                    due_date: dueDate.toLocaleDateString(
+                        'en-US', { month: 'short', day: 'numeric', year: 'numeric' }
+                    ),
+                    status: 'Active',
+                    days_remaining: duration
+                });
+            }
+
             setStatus('success');
-            onSuccess();
+            setAmount('');
+            setDuration(14);
             showToast(`Borrowed ${formatXLM(amount)} XLM successfully!`, 'success', hash);
         } catch (error) {
             console.error(error);
@@ -244,7 +269,7 @@ export default function BorrowForm({ wallet, poolStats, onSuccess, showToast, ha
                         <input
                             type="range"
                             min="7"
-                            max="30"
+                            max="90"
                             value={duration}
                             onChange={(e) => handleChange('duration', e.target.value)}
                             onBlur={() => handleBlur('duration')}
@@ -255,7 +280,7 @@ export default function BorrowForm({ wallet, poolStats, onSuccess, showToast, ha
                     <div className="flex justify-between mt-3 text-xs text-textSecondary font-medium px-1">
                         <span>7 days</span>
                         <span className="text-base text-textPrimary font-bold">{duration} days</span>
-                        <span>30 days</span>
+                        <span>90 days</span>
                     </div>
                     {touched.duration && errors.duration && <FieldError error={errors.duration} />}
                 </div>

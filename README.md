@@ -14,7 +14,7 @@ LumiLend is engineered with a modern, high-end technical architecture with the f
 
 ### Core Roles & Functionality
 - **Lenders:** Users can seamlessly deposit XLM into the decentralized liquidity pool. Their deposited amounts are tracked on-chain, and they naturally accrue yield over time as borrowers pay standard fixed-interest rates back into the shared pool.
-- **Borrowers:** Users can request short-term, micro-loans ranging from **5 to 100 XLM** against the pool. The application strictly checks the pool's remaining available liquidity before approving the loan. Borrowers can choose flexible repayment duration sliders between 7 and 30 days.
+- **Borrowers:** Users can request short-term, micro-loans ranging from **5 to 100 XLM** against the pool. The application strictly checks the pool's remaining available liquidity before approving the loan. Borrowers can choose flexible repayment duration sliders between 7 and 90 days.
 
 ### Smart Contract Architecture (Rust/Soroban)
 - **Escrow Pool Liquidity & Mathematical Precision:** All XLM deposited by lenders is held securely in the smart contract's decentralized pool. Calculations use native 128-bit integer scaling to seamlessly process Stellar's native `10^7` stroop decimal accuracy.
