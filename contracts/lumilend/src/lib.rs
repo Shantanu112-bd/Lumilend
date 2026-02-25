@@ -25,6 +25,8 @@ pub enum DataKey {
     Loan(u64),
     NextLoanId,
     ActiveLoan(Address),
+    Oracle(Address),
+    OracleAddress,
 }
 
 #[contracttype]
@@ -74,7 +76,7 @@ pub struct LumiLendPool;
 
 #[contractimpl]
 impl LumiLendPool {
-    pub fn initialize(env: Env, token: Address, interest_rate_bps: u32) -> Result<(), ContractError> {
+    pub fn initialize(env: Env, token: Address, interest_rate_bps: u32, oracle: Address) -> Result<(), ContractError> {
         if env.storage().instance().has(&DataKey::PoolState) {
             return Err(ContractError::AlreadyInitialized);
         }
@@ -86,6 +88,7 @@ impl LumiLendPool {
         };
         env.storage().instance().set(&DataKey::PoolState, &pool_state);
         env.storage().instance().set(&DataKey::Token, &token);
+        env.storage().instance().set(&DataKey::OracleAddress, &oracle);
         env.storage().instance().set(&DataKey::NextLoanId, &1u64);
         
         Ok(())
@@ -166,6 +169,15 @@ impl LumiLendPool {
         if pool_state.total_deposited - pool_state.total_lent < amount {
             return Err(ContractError::InsufficientPoolLiquidity);
         }
+
+        // Fetch price from oracle just to demonstrate cross-contract collateral valuation logic
+        let oracle_addr: Address = env.storage().instance().get(&DataKey::OracleAddress).unwrap();
+        use soroban_sdk::{symbol_short, vec, IntoVal};
+        let _price: i128 = env.invoke_contract(
+            &oracle_addr, 
+            &symbol_short!("get_price"), 
+            vec![&env, symbol_short!("XLM").into_val(&env)]
+        );
 
         let interest_owed = amount * (pool_state.interest_rate_bps as i128) / 10000;
         

@@ -5,6 +5,16 @@ use soroban_sdk::{testutils::{Address as _, Ledger}, Address, Env, String};
 use soroban_sdk::token::Client as TokenClient;
 use soroban_sdk::token::StellarAssetClient as TokenAdminClient;
 
+#[contract]
+pub struct MockOracle;
+
+#[contractimpl]
+impl MockOracle {
+    pub fn get_price(_env: Env, _asset: soroban_sdk::Symbol) -> i128 {
+        1000000 // Mock XLM price 0.10 USD
+    }
+}
+
 fn setup_test() -> (Env, LumiLendPoolClient<'static>, Address, Address, Address, TokenClient<'static>, TokenAdminClient<'static>) {
     let env = Env::default();
     env.mock_all_auths();
@@ -14,13 +24,15 @@ fn setup_test() -> (Env, LumiLendPoolClient<'static>, Address, Address, Address,
     let token_admin_client = TokenAdminClient::new(&env, &token_contract.address());
     let token_client = TokenClient::new(&env, &token_contract.address());
 
+    let oracle_id = env.register_contract(None, MockOracle);
+
     let contract_id = env.register_contract(None, LumiLendPool);
     let client = LumiLendPoolClient::new(&env, &contract_id);
     
     let lender = Address::generate(&env);
     let borrower = Address::generate(&env);
 
-    client.initialize(&token_contract.address(), &500); // 5% interest rate
+    client.initialize(&token_contract.address(), &500, &oracle_id); // 5% interest rate
 
     (env, client, lender, borrower, admin, token_client, token_admin_client)
 }
