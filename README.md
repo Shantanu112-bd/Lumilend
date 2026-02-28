@@ -1,5 +1,5 @@
 # LumiLend — Stellar Micro-Lending Pool
-[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://frontend-lac-psi-36.vercel.app)
+[![CI/CD Pipeline](https://github.com/Shantanu112-bd/Lumilend/actions/workflows/deploy.yml/badge.svg)](https://github.com/Shantanu112-bd/Lumilend/actions/workflows/deploy.yml) [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://frontend-lac-psi-36.vercel.app)
 
 **LumiLend** is a decentralized, non-custodial micro-lending pool built on the Stellar network using Soroban smart contracts. It enables users to deposit XLM to earn yields or securely borrow XLM against fixed dynamic parameters.
 
