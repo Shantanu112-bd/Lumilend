@@ -1,5 +1,6 @@
 # LumiLend — Stellar Micro-Lending Pool
-[![CI/CD Pipeline](https://github.com/Shantanu112-bd/Lumilend/actions/workflows/deploy.yml/badge.svg)](https://github.com/Shantanu112-bd/Lumilend/actions/workflows/deploy.yml) [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://frontend-lac-psi-36.vercel.app)
+[![CI/CD Pipeline](https://github.com/Shantanu112-bd/Lumilend/actions/workflows/deploy.yml/badge.svg)](https://github.com/Shantanu112-bd/Lumilend/actions/workflows/deploy.yml) 
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://frontend-lac-psi-36.vercel.app)
 
 **LumiLend** is a decentralized, non-custodial micro-lending pool built on the Stellar network using Soroban smart contracts. It enables users to deposit XLM to earn yields or securely borrow XLM against fixed dynamic parameters.
 
@@ -30,12 +31,28 @@ LumiLend is engineered with a modern, high-end technical architecture with the f
 - **Lost ID Auto-Recovery Scanner:** Seamless fallback mechanism where the Web UI can automatically recover lost active loan instances. If `localStorage` is cleared, the system scans generic loan IDs on the blockchain mapping to the connected wallet, recovering the session state effortlessly.
 - **Comprehensive Error Mapping:** Intelligent translation of Soroban VM `ContractError` enumerations into actionable, human-readable React Toast warnings (e.g., dynamically resolving `Error(Contract, #4)` to *"You already have an active loan. Please repay it first."*).
 
-## Deployed Contract Information
+## Deployed Contract Information & Submission Artifacts
 - **LendingPool Contract ID:** `CDTPCOTNCQXWKZLPGF56QWZ6TWNP3I4YYYK7G3ABCNT5DQGB4VKSA4J2`
 - **PriceOracle Contract ID:** `CAXH2PKPWKWFF7TXLGITWH7M6TFZAIOKIPAX2OOFKU2N355YGARPUOP5`
-- **LumiToken Contract ID:** `CABLMCLLYYTCFJ6AG7TKF6WBGMSWKQDEDM2BNJZNQKMIG3VERPFDUHPC`
+- **LumiToken (Reward Token) Contract ID:** `CABLMCLLYYTCFJ6AG7TKF6WBGMSWKQDEDM2BNJZNQKMIG3VERPFDUHPC`
 - **Network:** Stellar Testnet (`https://soroban-testnet.stellar.org`)
-- **Explorer:** [View Pool on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CDTPCOTNCQXWKZLPGF56QWZ6TWNP3I4YYYK7G3ABCNT5DQGB4VKSA4J2)
+
+### Inter-Contract Call Transaction Hash
+*(Please replace the placeholder below with the actual hash of a successful transaction where the Lending Pool interacts natively with the PriceOracle or LumiToken)*
+- **Transaction Hash:** `[INSERT_TRANSACTION_HASH_HERE]`
+
+### Explorer Links
+- [View Lending Pool on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CDTPCOTNCQXWKZLPGF56QWZ6TWNP3I4YYYK7G3ABCNT5DQGB4VKSA4J2)
+- [View PriceOracle on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CAXH2PKPWKWFF7TXLGITWH7M6TFZAIOKIPAX2OOFKU2N355YGARPUOP5)
+- [View LumiToken on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CABLMCLLYYTCFJ6AG7TKF6WBGMSWKQDEDM2BNJZNQKMIG3VERPFDUHPC)
+
+## Visual Artifacts
+### CI/CD Pipeline
+![CI/CD Pipeline Status](https://github.com/Shantanu112-bd/Lumilend/actions/workflows/deploy.yml/badge.svg)
+
+### Mobile Responsive View
+*(Please make sure to add your mobile screenshot named `mobile-view.png` to the repository root)*
+![Mobile Responsive View](./mobile-view.png)
 
 ## Tech Stack
 - **Frontend:** React 18, Vite, Tailwind CSS, Lucide Icons
